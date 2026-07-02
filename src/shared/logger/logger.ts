@@ -1,16 +1,18 @@
-import 'dotenv/config';
+import winston from 'winston';
 
-const config = {
-    nodeEnv: process.env.NODE_ENV ?? 'development',
+const logger = winston.createLogger({
+    level: 'info',
 
-    port: Number(process.env.PORT) || 5000,
+    format: winston.format.combine(
+        winston.format.timestamp(),
+        winston.format.printf(({ level, message, timestamp }) => {
+            return `[${timestamp}] ${level.toUpperCase()}: ${message}`;
+        }),
+    ),
 
-    databaseUrl: process.env.DATABASE_URL ?? '',
+    transports: [
+        new winston.transports.Console(),
+    ],
+});
 
-    jwt: {
-        secret: process.env.JWT_SECRET ?? '',
-        expiresIn: process.env.JWT_EXPIRES_IN ?? '1d',
-    },
-};
-
-export default config;
+export default logger;
