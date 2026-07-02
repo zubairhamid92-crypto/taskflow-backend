@@ -3,16 +3,17 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-  "dev": "tsx watch src/server.ts",
-  "build": "tsc",
-  "start": "node dist/server.js"
-},
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
     "@prisma/client": "^6.19.3",
+    "bcrypt": "^6.0.0",
     "compression": "^1.8.1",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
@@ -22,6 +23,7 @@
     "module-alias": "^2.3.4",
     "morgan": "^1.11.0",
     "prisma": "^6.19.3",
+    "slugify": "^1.6.9",
     "uuid": "^14.0.1",
     "winston": "^3.19.0"
   },
@@ -39,6 +41,7 @@
     "nodemon": "^3.1.14",
     "prettier": "^3.9.4",
     "ts-node": "^10.9.2",
+    "tsx": "^4.22.4",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.62.1"
   },

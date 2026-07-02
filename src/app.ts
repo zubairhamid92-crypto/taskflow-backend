@@ -2,11 +2,13 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
+import authRoutes from "./modules/auth/routes";
 
 const app = express();
 
 app.use(cors());
 app.use(helmet());
+app.use("/api/v1/auth", authRoutes);
 app.use(compression());
 
 app.use(express.json());
