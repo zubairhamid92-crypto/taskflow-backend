@@ -9,3 +9,9 @@ export interface RegisterUser {
     email: string;
     password: string;
 }
+
+export interface LoginUser {
+    organizationSlug: string;
+    email: string;
+    password: string;
+}

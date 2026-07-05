@@ -1,52 +1,43 @@
 import bcrypt from "bcrypt";
 import slugify from "slugify";
+import { UserRole } from "@prisma/client";
 
 import prisma from "../../database/prisma";
 
-import organizationRepository from "../organizations/repository";
-import userRepository from "../users/repository";
+import AppError from "../../shared/errors/AppError";
 
-import { UserRole } from "@prisma/client";
-import { RegisterUser } from "./interface";
+import organizationRepository from "../organizations/repository";
+import { LoginUser, RegisterUser } from "./interface";
+import { generateToken } from "../../shared/utils/jwt";
+import authRepository from "./repository";
 
 class AuthService {
 
     async register(data: RegisterUser) {
+        const organizationExists =
+            await organizationRepository.findByEmail(data.organizationEmail);
 
-        // Check Organization Email
-
-        const organization = await organizationRepository.findByEmail(
-            data.organizationEmail
-        );
-
-        if (organization) {
-            throw new Error("Organization already exists.");
+        if (organizationExists) {
+            throw new AppError("Organization already exists.", 409);
         }
-
-        // Generate Slug
 
         const slug = slugify(data.organizationName, {
             lower: true,
             strict: true,
         });
 
-        // Check Slug
-
-        const slugExists = await organizationRepository.findBySlug(slug);
+        const slugExists =
+            await organizationRepository.findBySlug(slug);
 
         if (slugExists) {
-            throw new Error("Organization slug already exists.");
+            throw new AppError("Organization slug already exists.", 409);
         }
-
-        // Hash Password
 
         const hashedPassword = await bcrypt.hash(data.password, 10);
 
-        // Transaction
+        return prisma.$transaction(async (tx) => {
 
-        const result = await prisma.$transaction(async (tx) => {
-
-            const newOrganization = await organizationRepository.create({
+            const organization = await tx.organization.create({
 
                 data: {
                     name: data.organizationName,
@@ -57,11 +48,11 @@ class AuthService {
 
             });
 
-            const newUser = await userRepository.create({
+            const user = await tx.user.create({
 
                 data: {
 
-                    organizationId: newOrganization.id,
+                    organizationId: organization.id,
 
                     firstName: data.firstName,
                     lastName: data.lastName,
@@ -70,19 +61,60 @@ class AuthService {
                     password: hashedPassword,
 
                     role: UserRole.ADMIN,
+
                 },
 
             });
 
             return {
-                organization: newOrganization,
-                user: newUser,
+
+                organization,
+                user,
+
             };
 
         });
 
-        return result;
+    }
+    async login(data: LoginUser) {
+        const user =
+            await authRepository.findUserByEmailAndOrganization(
+                data.organizationSlug,
+                data.email
+            );
 
+        if (!user) {
+
+            throw new AppError(
+                "Invalid Credentials.",
+                401
+            );
+
+        }
+        const passwordMatched = await bcrypt.compare(
+            data.password,
+            user.password
+        );
+
+        if (!passwordMatched) {
+            throw new AppError("Invalid Credentials.", 401);
+        }
+
+        const token = generateToken({  userId: user.id,
+                    organizationId: user.organizationId,
+                    role: user.role });
+
+        return {
+            token,
+            user: {
+                id: user.id,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                email: user.email,
+                role: user.role,
+                organization: user.organization,
+            },
+        };
     }
 
 }
