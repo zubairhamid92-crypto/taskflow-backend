@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 
 import authService from "./service";
+import { successResponse } from "../../shared/utils/response";
 
 class AuthController {
 
@@ -13,15 +14,11 @@ class AuthController {
         try {
             const result = await authService.register(req.body);
 
-            return res.status(201).json({
-
-                success: true,
-
-                message: "Organization registered successfully.",
-
-                data: result,
-
-            });
+            return successResponse(
+                res,
+                result,
+                "Organization registered successfully."
+            );
 
         } catch (error) {
 
@@ -39,15 +36,11 @@ class AuthController {
         try {
             const result = await authService.login(req.body);
 
-            return res.status(201).json({
-
-                success: true,
-
-                message: "Login Successfully",
-
-                data: result,
-
-            });
+            return successResponse(
+                res,
+                result,
+                "Login successful."
+            );
 
         } catch (error) {
 
