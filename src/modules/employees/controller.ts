@@ -45,6 +45,31 @@ class EmployeeController {
         }
 
     }
+        async list(
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction
+    ) {
+
+        try {
+
+            const employees = await employeeService.list(
+                req.user!.organizationId
+            );
+
+            return successResponse(
+                res,
+                employees,
+                "Employees fetched successfully."
+            );
+
+        } catch (error) {
+            next(error);
+        }
+
+      }
+
+        
 
 }
 

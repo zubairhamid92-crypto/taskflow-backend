@@ -7,7 +7,11 @@ class EmployeeService {
         return employeeRepository.create(data);
 
     }
+  async list(organizationId: string) {
 
+    return employeeRepository.findAll(organizationId);
+
+   }
 }
-
+ 
 export default new EmployeeService();
